@@ -33,3 +33,12 @@ def run_chain(eval_function = eval_function, n_init: int=5, n_steps: int = 60):
   del vocs, evaluator, generator, X, y1
 
   return y1_maxs
+
+def run_ensemble(n_chains: 25, eval_function = eval_function, n_init: int=3, n_steps: int = 50):
+  y1s = []
+  for i in range(n_chains):
+    print(f"Chain: {i+1} of {n_chains}")
+    y1 = run_chain(eval_function = eval_function, n_init=n_init, n_steps = n_steps)
+    y1s.append(y1)
+
+  return np.array(y1s)
