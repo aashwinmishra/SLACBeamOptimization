@@ -29,14 +29,17 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--model", type=str, default="TurBO")
 parser.add_argument("--init_samples", type=int, default=64)
 parser.add_argument("--len_chain", type=int, default=250)
+parser.add_argument("--num_ensemble", type=int, default=1)
 args = parser.parse_args()
 
 if args.model == "TurBO":
-  X = run_turbo(eval_function=eval_function, init_samples=args.init_samples, len_chain=args.len_chain)
-  get_optimum_details(X)
-  X.generator.data.to_csv('Xopt_data.csv', index=False)
+  for i in range(args.num_ensemble):
+    X = run_turbo(eval_function=eval_function, init_samples=args.init_samples, len_chain=args.len_chain)
+    get_optimum_details(X)
+    X.generator.data.to_csv(str(i)+'_Xopt_data.csv', index=False)
 elif args.model == "BO":
-  X = run_bo(eval_function=eval_function, init_samples=args.init_samples, len_chain=args.len_chain)
-  get_optimum_details(X)
-  X.generator.data.to_csv('Xopt_data.csv', index=False)
+  for i in range(args.num_ensemble):
+    X = run_bo(eval_function=eval_function, init_samples=args.init_samples, len_chain=args.len_chain)
+    get_optimum_details(X)
+    X.generator.data.to_csv(str(i)+'_Xopt_data.csv', index=False)
 
