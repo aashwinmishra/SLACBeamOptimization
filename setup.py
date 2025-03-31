@@ -14,7 +14,7 @@ setup(
     description="tools for LCLS beamline calculations",
     long_description=readme,
     long_description_content_type="text/markdown",
-    url="https://github.com/aashwinmishra/SLACBeamOptimization",
+    url="https://github.com/aashwinmishra/lcls_beamline_toolbox",
     packages=find_packages(),
     install_requires=requirements,
     classifiers=[
