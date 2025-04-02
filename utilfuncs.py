@@ -279,3 +279,68 @@ def plot_constrained(X, constrain:str="MINIMIZE", objective:str="MAXIMIZE"):
   ax1.grid()
   ax1.set_ylabel("Objective");
   plt.show()
+
+
+def run_turbo_bpe(eval_function, 
+                  thetas: list=[0.75, 0.75, 0.75, 0.75],
+                  objective:str="MINIMIZE",
+                  n_init: int=16,
+                  len_chain=64):
+  low, high, eps = 0.0, 1.0, 1e-3
+  vocs = VOCS(
+      variables = {
+                  "x1": [thetas[0], thetas[0]+eps],
+                  "x2": [thetas[1], thetas[1]+eps],
+                  "x3": [low, high],
+                  "x4": [low, high],
+                  "x5": [thetas[2], thetas[2]+eps],
+                  "x6": [thetas[3], thetas[3]+eps],
+                  "x7": [low, high],
+                  "x8": [low, high]
+                  },
+      objectives = {"f": objective},
+    )
+  evaluator = Evaluator(function=eval_function)
+  generator = ExpectedImprovementGenerator(
+      vocs=vocs, turbo_controller="optimize"
+  )
+  X = Xopt(evaluator=evaluator, generator=generator, vocs=vocs)
+  X.random_evaluate(n_samples=n_init)
+  for i in range(len_chain):
+    if i % 10 == 0:
+      print(f"Step: {i+1}")
+    X.step()
+  return X
+
+
+def run_turbo_intensity(eval_function, 
+                        chis: list=[0.75, 0.75, 0.75, 0.75],
+                        objective:str="MAXIMIZE",
+                        n_init: int=16,
+                        len_chain=64):
+  low, high, eps = 0.0, 1.0, 1e-3
+  vocs = VOCS(
+      variables = {
+                  "x1": [low, high],
+                  "x2": [low, high],
+                  "x3": [chis[0], chis[0]+eps],
+                  "x4": [chis[1], chis[1]+eps],
+                  "x5": [low, high],
+                  "x6": [low, high],
+                  "x7": [chis[2], chis[2]+eps],
+                  "x8": [chis[3], chis[3]+eps]
+                  },
+      objectives = {"f": objective},
+    )
+  evaluator = Evaluator(function=eval_function)
+  generator = ExpectedImprovementGenerator(
+      vocs=vocs, turbo_controller="optimize"
+  )
+  X = Xopt(evaluator=evaluator, generator=generator, vocs=vocs)
+  X.random_evaluate(n_samples=n_init)
+  for i in range(len_chain):
+    if i % 10 == 0:
+      print(f"Step: {i+1}")
+    X.step()
+  return X
+
