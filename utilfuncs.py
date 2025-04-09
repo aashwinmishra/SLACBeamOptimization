@@ -71,7 +71,7 @@ def eval_function_bpe(input_dict: dict) -> dict:
   return {"f": f}
 
 
-def eval_function_constrained(input_dict: dict) -> dict:
+def eval_function_constrained_bpe(input_dict: dict) -> dict:
   """
   Evaluates the SND function for input, returns the Beam Position Error as 
   a constraint, and the Intensity as the objective.
@@ -81,6 +81,19 @@ def eval_function_constrained(input_dict: dict) -> dict:
   output = get_snd_outputs(Xinp)
   f = output[0][1].item()
   c = output[0][0].item()
+  return {"f": f, "c": c}
+
+
+def eval_function_constrained_intensity(input_dict: dict) -> dict:
+  """
+  Evaluates the SND function for input, returns the Intensity as 
+  a constraint, and the Beam Position Error as the objective.
+  """
+  x1, x2, x3, x4, x5, x6, x7, x8 = input_dict["x1"], input_dict["x2"], input_dict["x3"], input_dict["x4"], input_dict["x5"], input_dict["x6"], input_dict["x7"], input_dict["x8"]
+  Xinp = np.expand_dims(np.array([x1, x2, x3, x4, x5, x6, x7, x8]), axis=0)
+  output = get_snd_outputs(Xinp)
+  c = output[0][1].item()
+  f = output[0][0].item()
   return {"f": f, "c": c}
 
 
