@@ -168,15 +168,6 @@ def run_turbo(eval_function=eval_function_intensity,
   for i in range(len_chain):
     if i % 10 == 0:
       print(f"Step: {i+1}")
-    model = X.generator.train_model()
-    trust_region = X.generator.turbo_controller.get_trust_region(generator.model)\
-          .squeeze()
-    scale_factor = X.generator.turbo_controller.length
-    region_width = trust_region[1] - trust_region[0]
-    best_value = X.generator.turbo_controller.best_value
-    n_successes = X.generator.turbo_controller.success_counter
-    n_failures = X.generator.turbo_controller.failure_counter
-    acq = X.generator.get_acquisition(model)
     X.step()
   return X
 
