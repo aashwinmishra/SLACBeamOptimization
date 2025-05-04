@@ -245,6 +245,10 @@ def run_bo_constrained(eval_function,
 
 
 def plot_results(X, objective="MAXIMIZE")->None:
+  """
+  Takes an Xopt object and the optimization goal. Plots
+  the optimum as a line, and the samples as points.
+  """
   y1 = X.generator.data["f"]
   if objective=="MAXIMIZE":
     y1_optimum = np.maximum.accumulate(y1)
@@ -264,7 +268,12 @@ def plot_results(X, objective="MAXIMIZE")->None:
   plt.show()
 
 
-def plot_constrained(X, constrain:str="MINIMIZE", objective:str="MAXIMIZE"):
+def plot_constrained(X, constrain:str="MINIMIZE", objective:str="MAXIMIZE")->None:
+    """
+  Takes an Xopt object with constraints, the optimization and constraining goal. Plots
+  the optimum as a line, and the samples as points. Does the same for the constrained 
+  feature.
+  """
   c = X.generator.data["c"]
   c_mins = np.minimum.accumulate(c)
   f = X.generator.data["f"]
