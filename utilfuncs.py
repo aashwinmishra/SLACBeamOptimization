@@ -79,8 +79,20 @@ def eval_function_mobo(input_dict: dict) -> dict:
   x1, x2, x3, x4, x5, x6, x7, x8 = input_dict["x1"], input_dict["x2"], input_dict["x3"], input_dict["x4"], input_dict["x5"], input_dict["x6"], input_dict["x7"], input_dict["x8"]
   Xinp = np.expand_dims(np.array([x1, x2, x3, x4, x5, x6, x7, x8]), axis=0)
   output = get_snd_outputs(Xinp).squeeze()
-  f1, f2 =  output[0].item(), output[1].item()*100 #BPE (0-350), Intensity (0-100)
+  f1, f2 =  output[0].item(), output[1].item() #BPE (0-350), Intensity (0-100)
   return {"f1": f1, "f2": f2}
+
+
+def eval_function_scalarized(input_dict: dict) -> dict:
+  """
+  Evaluates the SND function for input, returns the scalarized objective: log(BPE / Intensity**2)
+  """
+  x1, x2, x3, x4, x5, x6, x7, x8 = input_dict["x1"], input_dict["x2"], input_dict["x3"], input_dict["x4"], input_dict["x5"], input_dict["x6"], input_dict["x7"], input_dict["x8"]
+  Xinp = np.expand_dims(np.array([x1, x2, x3, x4, x5, x6, x7, x8]), axis=0)
+  output = get_snd_outputs(Xinp).squeeze()
+  f1, f2 =  output[0].item()/350, output[1].item() #BPE (0-350), Intensity (0-100)
+  f = np.log(f1 / f2**2)
+  return {"f": f}
 
 
 def eval_function_constrained_bpe(input_dict: dict) -> dict:
@@ -107,6 +119,34 @@ def eval_function_constrained_intensity(input_dict: dict) -> dict:
   c = output[0][1].item()
   f = output[0][0].item()
   return {"f": f, "c": c}
+
+
+def get_detailed_outputs(X_init, eval_function):
+  """
+  Takes in a dataframe of points to sample at, returns an Xopt object with the samplign points,
+  the BPE and the intensity.
+  """
+  low, high = 0.0, 1.0
+  n_init = init_samples
+  vocs = VOCS(
+      variables = {"x1": [low, high],
+                  "x2": [low, high],
+                  "x3": [low, high],
+                  "x4": [low, high],
+                  "x5": [low, high],
+                  "x6": [low, high],
+                  "x7": [low, high],
+                  "x8": [low, high]
+                  },
+      objectives = {"f": "MINIMIZE},
+    )
+  evaluator = Evaluator(function=eval_function)
+  generator = ExpectedImprovementGenerator(
+      vocs=vocs, turbo_controller="optimize"
+  )
+  X = Xopt(evaluator=evaluator, generator=generator, vocs=vocs)
+  X.evaluate_data(X_init)
+  return X
 
 
 def run_mobo(eval_function = eval_function, n_init: int=64, n_steps: int = 150):
