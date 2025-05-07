@@ -78,7 +78,7 @@ def eval_function_mobo(input_dict: dict) -> dict:
   """
   x1, x2, x3, x4, x5, x6, x7, x8 = input_dict["x1"], input_dict["x2"], input_dict["x3"], input_dict["x4"], input_dict["x5"], input_dict["x6"], input_dict["x7"], input_dict["x8"]
   Xinp = np.expand_dims(np.array([x1, x2, x3, x4, x5, x6, x7, x8]), axis=0)
-  output = get_snd_outputs(Xinp)
+  output = get_snd_outputs(Xinp).squeeze()
   f1, f2 =  output[0].item(), output[1].item()*100 #BPE (0-350), Intensity (0-100)
   return {"f1": f1, "f2": f2}
 
@@ -318,7 +318,7 @@ def plot_results(X, objective="MAXIMIZE")->None:
 
 
 def plot_constrained(X, constrain:str="MINIMIZE", objective:str="MAXIMIZE")->None:
-    """
+  """
   Takes an Xopt object with constraints, the optimization and constraining goal. Plots
   the optimum as a line, and the samples as points. Does the same for the constrained 
   feature.
