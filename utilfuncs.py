@@ -7,6 +7,7 @@ from split_and_delay import SND
 from xopt import Xopt, Evaluator
 from xopt.generators.bayesian import MOBOGenerator
 from xopt.generators.bayesian import ExpectedImprovementGenerator, UpperConfidenceBoundGenerator
+from xopt.generators.bayesian import MOBOGenerator
 from xopt.resources.test_functions.tnk import evaluate_TNK, tnk_vocs
 from xopt import VOCS
 from xopt import Xopt
@@ -70,6 +71,17 @@ def eval_function_bpe(input_dict: dict) -> dict:
   f = output[0][0].item()
   return {"f": f}
 
+def eval_function_mobo(input_dict: dict) -> dict:
+  """
+  Evaluates the SND function for input, returns the Beam Position Error (0-350 in microns) 
+  and the Intensity (0-100, in percentage).
+  """
+  x1, x2, x3, x4, x5, x6, x7, x8 = input_dict["x1"], input_dict["x2"], input_dict["x3"], input_dict["x4"], input_dict["x5"], input_dict["x6"], input_dict["x7"], input_dict["x8"]
+  Xinp = np.expand_dims(np.array([x1, x2, x3, x4, x5, x6, x7, x8]), axis=0)
+  output = get_snd_outputs(Xinp)
+  f1, f2 =  output[0].item(), output[1].item()*100 #BPE (0-350), Intensity (0-100)
+  return {"f1": f1, "f2": f2}
+
 
 def eval_function_constrained_bpe(input_dict: dict) -> dict:
   """
@@ -95,6 +107,43 @@ def eval_function_constrained_intensity(input_dict: dict) -> dict:
   c = output[0][1].item()
   f = output[0][0].item()
   return {"f": f, "c": c}
+
+
+def run_mobo(eval_function = eval_function, n_init: int=64, n_steps: int = 150):
+  """
+  Runs MOBO chain on the eval function with objectives, 
+  with n_init initial samples followed
+  by n_steps samples.
+  Returns the Xopt object.
+  """
+  low = 0.0
+  high = 1.0
+  vocs = VOCS(
+    variables = {"x1": [low, high],
+                 "x2": [low, high],
+                 "x3": [low, high],
+                 "x4": [low, high],
+                 "x5": [low, high],
+                 "x6": [low, high],
+                 "x7": [low, high],
+                 "x8": [low, high]},
+    objectives = {"f1": "MINIMIZE", "f2": "MAXIMIZE"},
+  )
+  gigo = np.random.rand(8)
+  evaluator = Evaluator(function=eval_function)
+  ref_point = eval_function({"x1": gigo[0], "x2": gigo[1], "x3": gigo[2],
+                             "x4": gigo[3], "x5": gigo[4], "x6": gigo[5],
+                             "x7": gigo[6], "x8": gigo[7]})
+  generator = MOBOGenerator(vocs=vocs, reference_point= ref_point)
+  generator.n_monte_carlo_samples = 512
+  generator.numerical_optimizer.n_restarts = 80
+  X = Xopt(generator=generator, evaluator=evaluator, vocs=vocs)
+  X.random_evaluate(n_init)
+  for i in range(n_steps):
+    print(i)
+    X.step()
+
+  return X
 
 
 def run_bo(eval_function, 
