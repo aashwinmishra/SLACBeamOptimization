@@ -127,7 +127,6 @@ def get_detailed_outputs(X_init, eval_function):
   the BPE and the intensity.
   """
   low, high = 0.0, 1.0
-  n_init = init_samples
   vocs = VOCS(
       variables = {"x1": [low, high],
                   "x2": [low, high],
@@ -138,7 +137,7 @@ def get_detailed_outputs(X_init, eval_function):
                   "x7": [low, high],
                   "x8": [low, high]
                   },
-      objectives = {"f": "MINIMIZE},
+      objectives = {"f": "MINIMIZE"},
     )
   evaluator = Evaluator(function=eval_function)
   generator = ExpectedImprovementGenerator(
@@ -149,7 +148,7 @@ def get_detailed_outputs(X_init, eval_function):
   return X
 
 
-def run_mobo(eval_function = eval_function, n_init: int=64, n_steps: int = 150):
+def run_mobo(eval_function = eval_function_mobo, n_init: int=64, n_steps: int = 150):
   """
   Runs MOBO chain on the eval function with objectives, 
   with n_init initial samples followed
@@ -250,10 +249,7 @@ def run_turbo(eval_function=eval_function_intensity,
   xs = sampler.random(n=n_init)
   init_samples = pd.DataFrame({f'x{i+1}': xs[:,i] for i in range(xs.shape[1])})
   X.evaluate_data(init_samples)
-  X.generator.train_model()
-  X.generator.turbo_controller.update_state(X.generator.data)
-  X.generator.turbo_controller.get_trust_region(X.generator.model)
-
+  
   for i in range(len_chain):
     if i % 10 == 0:
       print(f"Step: {i+1}")
@@ -445,4 +441,3 @@ def run_turbo_intensity(eval_function,
       print(f"Step: {i+1}")
     X.step()
   return X
-
